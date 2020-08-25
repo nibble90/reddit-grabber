@@ -1,1 +1,6 @@
+bin
+lib
+share
+pyvenv.cfg
+lib64
 .env
