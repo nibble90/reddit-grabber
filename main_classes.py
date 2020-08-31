@@ -11,9 +11,16 @@ class RedditAPI:
         self.reddit = praw.Reddit(client_id=CLIENT_ID,
                      client_secret=CLIENT_SECRET,
                      user_agent="JacobBot Reddit Grabber (admin is u/nibble90)")
+"""
+    #Will not work, grabbing top 10 may not trigger limits?
+    def rate_check(self):
+        return praw.models.Auth(self.reddit, None).limits
+"""
     def pics(self):
         subreddit_top = self.reddit.subreddit("pics").top("day", limit=10)
         for submission in subreddit_top:
             print(submission.title)
+        print(self.rate_check())
+
 
 RedditAPI().pics()
