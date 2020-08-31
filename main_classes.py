@@ -21,4 +21,5 @@ class RedditAPI:
         for submission in subreddit_top:
             return (submission.title, submission.score, submission.url)
 
-RedditAPI().pics()
+if __name__ == "__main__":
+    RedditAPI().pics()
