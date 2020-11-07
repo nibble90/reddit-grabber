@@ -18,8 +18,11 @@ class RedditAPI:
 
     def pics(self):
         subreddit_top = self.reddit.subreddit("pics").top("day", limit=10)
+        return_list = []
         for submission in subreddit_top:
-            return (submission.title, submission.score, submission.url)
+            tuple_to_append = (submission.title, submission.score, submission.url, submission.selftext, submission.author, submission.id)
+            return_list.append(tuple_to_append)
+        return return_list
 
 if __name__ == "__main__":
     RedditAPI().pics()
