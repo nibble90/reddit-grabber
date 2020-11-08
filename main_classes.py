@@ -1,4 +1,4 @@
-import praw
+import praw, sqlite3
 from os import getenv
 from dotenv import load_dotenv
 
@@ -24,5 +24,47 @@ class RedditAPI:
             return_list.append(tuple_to_append)
         return return_list
 
+class database:
+    def __init__(self, db="/home/ubuntu/jacobbot/reddit-grabber/posts.db"):
+        self.db = db
+        self.__create_databases()
+
+    def __create_databases(self):
+        connection = sqlite3.connect(self.db)
+        c = connection.cursor()
+        c.execute('''CREATE TABLE IF NOT EXISTS posts
+             (uuid INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, score TEXT, url TEXT,
+             selftext TEXT, author TEXT, id TEXT)''')
+        c.execute('''CREATE TABLE IF NOT EXISTS posts_cache
+             (uuid INTEGER PRIMARY KEY AUTOINCREMENT, unix_timestamp INTEGER, post0 TEXT, 
+             post1 TEXT, post2 TEXT, post3 TEXT, post4 TEXT, post5 TEXT, post6 TEXT, 
+             post7 TEXT, post8 TEXT, post9 TEXT, FOREIGN KEY(post0) REFERENCES posts(uuid), 
+             FOREIGN KEY(post1) REFERENCES posts(uuid), FOREIGN KEY(post2) REFERENCES posts(uuid), FOREIGN KEY(post3) REFERENCES posts(uuid), 
+             FOREIGN KEY(post4) REFERENCES posts(uuid), FOREIGN KEY(post5) REFERENCES posts(uuid), FOREIGN KEY(post6) REFERENCES posts(uuid), 
+             FOREIGN KEY(post7) REFERENCES posts(uuid), FOREIGN KEY(post8) REFERENCES posts(uuid), FOREIGN KEY(post9) REFERENCES posts(uuid))''')
+        connection.commit()
+        connection.close()
+
+    def compile_uuid(self):
+        pass
+
+    def write_pics(self, title=None, score=None, url=None, selftext=None, author=None, post_id=None):
+        connection = sqlite3.connect(self.db)
+        c = connection.cursor()
+        title = str(title, )
+        score = str(score, )
+        url = str(url, )
+        selftext = str(selftext, )
+        author = str(author, )
+        post_id = str(post_id, )
+        c.execute("INSERT INTO posts(title, score, url, selftext, author, id) VALUES(?, ?, ?, ?, ?, ?)", 
+            (title, score, url, selftext, author, post_id))
+        connection.commit()
+        connection.close()
+
+
 if __name__ == "__main__":
-    RedditAPI().pics()
+    pics = RedditAPI().pics()
+    db = database()
+    for title, score, url, selftext, author, post_id in pics:
+        db.write_pics(title, score, url, selftext, author, post_id)

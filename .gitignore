@@ -4,3 +4,4 @@ share
 pyvenv.cfg
 lib64
 .env
+*.db
