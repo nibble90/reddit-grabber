@@ -1,4 +1,4 @@
-import praw, sqlite3
+import praw, sqlite3, time
 from os import getenv
 from dotenv import load_dotenv
 
@@ -45,8 +45,8 @@ class database:
         connection.commit()
         connection.close()
 
-    def compile_uuid(self):
-        pass
+    def unix_time(self):
+        return int(time.time())
 
     def write_pics(self, subreddit=None, title=None, score=None, url=None, selftext=None, author=None, post_id=None):
         connection = sqlite3.connect(self.db)
