@@ -33,7 +33,7 @@ class database:
         connection = sqlite3.connect(self.db)
         c = connection.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS posts
-             (uuid INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, score TEXT, url TEXT,
+             (uuid INTEGER PRIMARY KEY AUTOINCREMENT, subreddit TEXT, title TEXT, score TEXT, url TEXT,
              selftext TEXT, author TEXT, id TEXT)''')
         c.execute('''CREATE TABLE IF NOT EXISTS posts_cache
              (uuid INTEGER PRIMARY KEY AUTOINCREMENT, unix_timestamp INTEGER, post0 TEXT, 
@@ -48,7 +48,7 @@ class database:
     def compile_uuid(self):
         pass
 
-    def write_pics(self, title=None, score=None, url=None, selftext=None, author=None, post_id=None):
+    def write_pics(self, subreddit=None, title=None, score=None, url=None, selftext=None, author=None, post_id=None):
         connection = sqlite3.connect(self.db)
         c = connection.cursor()
         title = str(title, )
@@ -57,8 +57,9 @@ class database:
         selftext = str(selftext, )
         author = str(author, )
         post_id = str(post_id, )
-        c.execute("INSERT INTO posts(title, score, url, selftext, author, id) VALUES(?, ?, ?, ?, ?, ?)", 
-            (title, score, url, selftext, author, post_id))
+        subreddit = str(subreddit, )
+        c.execute("INSERT INTO posts(subreddit, title, score, url, selftext, author, id) VALUES(?, ?, ?, ?, ?, ?, ?)", 
+            (subreddit, title, score, url, selftext, author, post_id))
         connection.commit()
         connection.close()
 
@@ -67,4 +68,4 @@ if __name__ == "__main__":
     pics = RedditAPI().pics()
     db = database()
     for title, score, url, selftext, author, post_id in pics:
-        db.write_pics(title, score, url, selftext, author, post_id)
+        db.write_pics("pics", title, score, url, selftext, author, post_id)
