@@ -78,7 +78,7 @@ class database:
         post7 = str(post7, )
         post8 = str(post8, )
         post9 = str(post9, )
-        c.execute("INSERT INTO posts_cache(unix_timestamp, post0, post1, post2, post3, post4, post5, post6, post7 post8, post9) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+        c.execute("INSERT INTO posts_cache(unix_timestamp, post0, post1, post2, post3, post4, post5, post6, post7, post8, post9) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
             (unix_timestamp, post0, post1, post2, post3, post4, post5, post6, post7, post8, post9))
         connection.commit()
         connection.close()
