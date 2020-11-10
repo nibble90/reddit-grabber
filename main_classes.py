@@ -1,4 +1,4 @@
-import praw, sqlite3, time
+import praw, sqlite3, time, threading
 from os import getenv
 from dotenv import load_dotenv
 
@@ -29,6 +29,7 @@ class database:
         self.db = db
         self.__create_databases()
         self.uuids = []
+        self.reftime = time.time()
 
     def __create_databases(self):
         connection = sqlite3.connect(self.db)
@@ -55,6 +56,12 @@ class database:
         connection.commit()
         connection.close()
         self.uuids = []
+
+    def begin_reset_loop(self):
+        endtime = 60.0 - ((time.time() - self.reftime) % 60.0)
+        threading.Timer(endtime, self.begin_reset_loop).start()
+        self.__reset_database()
+        self.pics_run()
 
     def unix_time(self):
         return int(time.time())
@@ -110,11 +117,15 @@ class database:
     def cache_into_timestamps(self):
         self.write_timestamps(self.uuids[0], self.uuids[1], self.uuids[2], self.uuids[3], self.uuids[4], self.uuids[5], self.uuids[6], self.uuids[7], self.uuids[8], self.uuids[9])
 
+    def pics_run(self):
+        pics = RedditAPI().pics()
+        db = database()
+        for title, score, url, selftext, author, post_id in pics:
+            db.write_cache("pics", title, score, url, selftext, author, post_id)
+            db.uuid_info(post_id)
+        db.cache_into_timestamps()
 
 if __name__ == "__main__":
-    pics = RedditAPI().pics()
     db = database()
-    for title, score, url, selftext, author, post_id in pics:
-        db.write_cache("pics", title, score, url, selftext, author, post_id)
-        db.uuid_info(post_id)
-    db.cache_into_timestamps()
+    db.pics_run()
+    db.begin_reset_loop()
