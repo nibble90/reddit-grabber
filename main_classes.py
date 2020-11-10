@@ -38,7 +38,7 @@ class database:
              (uuid INTEGER PRIMARY KEY AUTOINCREMENT, subreddit TEXT, title TEXT, score TEXT, url TEXT,
              selftext TEXT, author TEXT, id TEXT)''')
         c.execute('''CREATE TABLE IF NOT EXISTS posts_cache
-             (uuid INTEGER PRIMARY KEY AUTOINCREMENT, unix_timestamp INTEGER, post0 TEXT, 
+             (uuid INTEGER PRIMARY KEY AUTOINCREMENT, unix_timestamp INTEGER, subreddit TEXT, post0 TEXT, 
              post1 TEXT, post2 TEXT, post3 TEXT, post4 TEXT, post5 TEXT, post6 TEXT, 
              post7 TEXT, post8 TEXT, post9 TEXT, FOREIGN KEY(post0) REFERENCES posts(uuid), 
              FOREIGN KEY(post1) REFERENCES posts(uuid), FOREIGN KEY(post2) REFERENCES posts(uuid), FOREIGN KEY(post3) REFERENCES posts(uuid), 
@@ -81,10 +81,11 @@ class database:
         connection.commit()
         connection.close()
     
-    def write_timestamps(self, post0=None, post1=None, post2=None, post3=None, post4=None, post5=None, post6=None, post7=None, post8=None, post9=None):
+    def write_timestamps(self, subreddit=None, post0=None, post1=None, post2=None, post3=None, post4=None, post5=None, post6=None, post7=None, post8=None, post9=None):
         connection = sqlite3.connect(self.db)
         c = connection.cursor()
         unix_timestamp = self.unix_time()
+        subreddit = str(subreddit, )
         post0 = str(post0, )
         post1 = str(post1, )
         post2 = str(post2, )
@@ -95,8 +96,8 @@ class database:
         post7 = str(post7, )
         post8 = str(post8, )
         post9 = str(post9, )
-        c.execute("INSERT INTO posts_cache(unix_timestamp, post0, post1, post2, post3, post4, post5, post6, post7, post8, post9) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-            (unix_timestamp, post0, post1, post2, post3, post4, post5, post6, post7, post8, post9))
+        c.execute("INSERT INTO posts_cache(unix_timestamp, subreddit, post0, post1, post2, post3, post4, post5, post6, post7, post8, post9) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+            (unix_timestamp, subreddit, post0, post1, post2, post3, post4, post5, post6, post7, post8, post9))
         connection.commit()
         connection.close()
 
@@ -114,8 +115,8 @@ class database:
         uuid = self.grab_uuid(post_id)
         self.uuids.append(uuid)
 
-    def cache_into_timestamps(self):
-        self.write_timestamps(self.uuids[0], self.uuids[1], self.uuids[2], self.uuids[3], self.uuids[4], self.uuids[5], self.uuids[6], self.uuids[7], self.uuids[8], self.uuids[9])
+    def cache_into_timestamps(self, subreddit):
+        self.write_timestamps(subreddit, self.uuids[0], self.uuids[1], self.uuids[2], self.uuids[3], self.uuids[4], self.uuids[5], self.uuids[6], self.uuids[7], self.uuids[8], self.uuids[9])
 
     def pics_run(self):
         pics = RedditAPI().pics()
@@ -123,7 +124,7 @@ class database:
         for title, score, url, selftext, author, post_id in pics:
             db.write_cache("pics", title, score, url, selftext, author, post_id)
             db.uuid_info(post_id)
-        db.cache_into_timestamps()
+        db.cache_into_timestamps("pics")
 
 if __name__ == "__main__":
     db = database()
