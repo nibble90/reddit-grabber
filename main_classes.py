@@ -46,6 +46,16 @@ class database:
         connection.commit()
         connection.close()
 
+    def __reset_database(self):
+        connection = sqlite3.connect(self.db)
+        c = connection.cursor()
+        c.execute('''DELETE FROM posts''')
+        c.execute('''DELETE FROM posts_cache''')
+        c.execute('''DELETE FROM SQLITE_SEQUENCE''')
+        connection.commit()
+        connection.close()
+        self.uuids = []
+
     def unix_time(self):
         return int(time.time())
 
@@ -108,4 +118,3 @@ if __name__ == "__main__":
         db.write_cache("pics", title, score, url, selftext, author, post_id)
         db.uuid_info(post_id)
     db.cache_into_timestamps()
-
