@@ -20,7 +20,7 @@ class RedditAPI:
         subreddit_top = self.reddit.subreddit("pics").top("day", limit=10)
         return_list = []
         for submission in subreddit_top:
-            tuple_to_append = (submission.title, submission.score, submission.url, submission.selftext, submission.author, submission.id)
+            tuple_to_append = (submission.over_18, submission.title, submission.score, submission.url, submission.selftext, submission.author, submission.id)
             return_list.append(tuple_to_append)
         return return_list
 
@@ -35,7 +35,7 @@ class database:
         connection = sqlite3.connect(self.db)
         c = connection.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS posts
-             (uuid INTEGER PRIMARY KEY AUTOINCREMENT, subreddit TEXT, title TEXT, score TEXT, url TEXT,
+             (uuid INTEGER PRIMARY KEY AUTOINCREMENT, nsfw TEXT, subreddit TEXT, title TEXT, score TEXT, url TEXT,
              selftext TEXT, author TEXT, id TEXT)''')
         c.execute('''CREATE TABLE IF NOT EXISTS posts_cache
              (uuid INTEGER PRIMARY KEY AUTOINCREMENT, unix_timestamp INTEGER, subreddit TEXT, post0 TEXT, 
@@ -66,7 +66,7 @@ class database:
     def unix_time(self):
         return int(time.time())
 
-    def write_cache(self, subreddit=None, title=None, score=None, url=None, selftext=None, author=None, post_id=None):
+    def write_cache(self, nsfw=None, subreddit=None, title=None, score=None, url=None, selftext=None, author=None, post_id=None):
         connection = sqlite3.connect(self.db)
         c = connection.cursor()
         title = str(title, )
@@ -76,8 +76,8 @@ class database:
         author = str(author, )
         post_id = str(post_id, )
         subreddit = str(subreddit, )
-        c.execute("INSERT INTO posts(subreddit, title, score, url, selftext, author, id) VALUES(?, ?, ?, ?, ?, ?, ?)", 
-            (subreddit, title, score, url, selftext, author, post_id))
+        c.execute("INSERT INTO posts(nsfw, subreddit, title, score, url, selftext, author, id) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", 
+            (nsfw, subreddit, title, score, url, selftext, author, post_id))
         connection.commit()
         connection.close()
     
@@ -121,8 +121,8 @@ class database:
     def pics_run(self):
         pics = RedditAPI().pics()
         db = database()
-        for title, score, url, selftext, author, post_id in pics:
-            db.write_cache("pics", title, score, url, selftext, author, post_id)
+        for nsfw, title, score, url, selftext, author, post_id in pics:
+            db.write_cache(nsfw, "pics", title, score, url, selftext, author, post_id)
             db.uuid_info(post_id)
         db.cache_into_timestamps("pics")
 
