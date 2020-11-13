@@ -24,8 +24,16 @@ class RedditAPI:
             return_list.append(tuple_to_append)
         return return_list
 
+    def subreddit_search(self, sub):
+        subreddit_top = self.reddit.subreddit(sub).top("day", limit=10)
+        return_list = []
+        for submission in subreddit_top:
+            tuple_to_append = (submission.over_18, submission.title, submission.score, submission.url, submission.selftext, submission.author, submission.id)
+            return_list.append(tuple_to_append)
+        return return_list
+
 class database:
-    def __init__(self, db="/home/ubuntu/jacobbot/reddit-grabber/posts.db"):
+    def __init__(self, db="/home/ubuntu/jacobbot/redditgrabber/posts.db"):
         self.db = db
         self.__create_databases()
         self.uuids = []
@@ -62,6 +70,29 @@ class database:
         threading.Timer(endtime, self.begin_reset_loop).start()
         self.__reset_database()
         self.pics_run()
+        self.aww_run()
+        self.refresh_cache()
+
+    def refresh_cache(self):
+        connection = sqlite3.connect(self.db)
+        c = connection.cursor()
+        c.execute('''SELECT subreddit, post0, post1, post2, post3, post4, post5, post6, post7, post8, post9 FROM posts_cache''')
+        results = c.fetchall()
+        connection.commit()
+        connection.close()
+        
+        for sub, post0, post1, post2, post3, post4, post5, post6, post7 ,post8, post9 in results:
+            if len(sub) > 1:
+                result = RedditAPI().subreddit_search(sub)
+                for nsfw, title, score, url, selftext, author, post_id in result:
+                    pass
+                connection = sqlite3.connect(self.db)
+                c = connection.cursor()
+                subreddit = str(sub, )
+                c.execute('''UPDATE ? FROM posts_cache''', (subreddit, ))
+                results = c.fetchall()
+                connection.commit()
+                connection.close()
 
     def unix_time(self):
         return int(time.time())
@@ -126,7 +157,16 @@ class database:
             db.uuid_info(post_id)
         db.cache_into_timestamps("pics")
 
+    def aww_run(self):
+        pics = RedditAPI().subreddit_search("aww")
+        db = database()
+        for nsfw, title, score, url, selftext, author, post_id in pics:
+            db.write_cache(nsfw, "aww", title, score, url, selftext, author, post_id)
+            db.uuid_info(post_id)
+        db.cache_into_timestamps("aww")
+
 if __name__ == "__main__":
     db = database()
     db.pics_run()
+    db.aww_run()
     db.begin_reset_loop()
