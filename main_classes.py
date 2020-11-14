@@ -80,17 +80,24 @@ class database:
         results = c.fetchall()
         connection.commit()
         connection.close()
-        
-        for sub, post0, post1, post2, post3, post4, post5, post6, post7 ,post8, post9 in results:
+
+        for sub, post0, post1, post2, post3, post4, post5, post6, post7, post8, post9 in results:
             if len(sub) > 1:
                 result = RedditAPI().subreddit_search(sub)
-                for nsfw, title, score, url, selftext, author, post_id in result:
-                    pass
                 connection = sqlite3.connect(self.db)
                 c = connection.cursor()
-                subreddit = str(sub, )
-                c.execute('''UPDATE ? FROM posts_cache''', (subreddit, ))
-                results = c.fetchall()
+
+                list_of_posts = [post0, post1, post2, post3, post4, post5, post6, post7, post8, post9]
+
+                for nsfw, title, score, url, selftext, author, post_id in result:
+                    title = str(title, )
+                    score = str(score, )
+                    url = str(url, )
+                    selftext = str(selftext, )
+                    author = str(author, )
+                    post_id = str(post_id, )
+                    post = list_of_posts.pop(0)
+                    c.execute('''UPDATE posts SET nsfw=?, title=?, score=?, url=?, selftext=?, author=?, id=? WHERE uuid=?''', (nsfw, title, score, url, selftext, author, post_id, post))
                 connection.commit()
                 connection.close()
 
