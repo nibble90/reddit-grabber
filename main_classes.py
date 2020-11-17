@@ -24,12 +24,17 @@ class RedditAPI:
             return_list.append(tuple_to_append)
         return return_list
 
-    def subreddit_search(self, sub):
+    def subreddit_search(self, sub, override=False):
         subreddit_top = self.reddit.subreddit(sub).top("day", limit=10)
         return_list = []
         for submission in subreddit_top:
             tuple_to_append = (submission.over_18, submission.title, submission.score, submission.url, submission.selftext, submission.author, submission.id)
             return_list.append(tuple_to_append)
+            if not override:
+                db = database()
+                db.add_custom_sub(submission.over_18, sub, submission.title, submission.score, submission.url, submission.selftext, submission.author, submission.id)
+        if not override:
+            db.cache_into_timestamps(sub)
         return return_list
 
 class database:
@@ -109,6 +114,8 @@ class database:
                 connection.commit()
                 connection.close()
 
+                # refresh is not behaving, adding rows when it shouldnt
+
     def unix_time(self):
         return int(time.time())
 
@@ -165,20 +172,26 @@ class database:
         self.write_timestamps(subreddit, self.uuids[0], self.uuids[1], self.uuids[2], self.uuids[3], self.uuids[4], self.uuids[5], self.uuids[6], self.uuids[7], self.uuids[8], self.uuids[9])
 
     def pics_run(self):
-        pics = RedditAPI().pics()
+        content = RedditAPI().pics()
         db = database()
-        for nsfw, title, score, url, selftext, author, post_id in pics:
+        for nsfw, title, score, url, selftext, author, post_id in content:
             db.write_cache(nsfw, "pics", title, score, url, selftext, author, post_id)
             db.uuid_info(post_id)
         db.cache_into_timestamps("pics")
 
     def aww_run(self):
-        pics = RedditAPI().subreddit_search("aww")
+        content = RedditAPI().subreddit_search("aww", override=True)
         db = database()
-        for nsfw, title, score, url, selftext, author, post_id in pics:
+        for nsfw, title, score, url, selftext, author, post_id in content:
             db.write_cache(nsfw, "aww", title, score, url, selftext, author, post_id)
             db.uuid_info(post_id)
         db.cache_into_timestamps("aww")
+
+    def add_custom_sub(self, nsfw, subreddit, title, score, url, selftext, author, post_id):
+        db = database()
+        db.write_cache(nsfw, subreddit, title, score, url, selftext, author, post_id)
+        db.uuid_info(post_id)
+        
 
 if __name__ == "__main__":
     db = database()
