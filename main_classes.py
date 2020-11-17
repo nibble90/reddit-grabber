@@ -38,6 +38,7 @@ class database:
         self.__create_databases()
         self.uuids = []
         self.reftime = time.time()
+        self.reset_lock = False
 
     def __create_databases(self):
         connection = sqlite3.connect(self.db)
@@ -66,12 +67,19 @@ class database:
         self.uuids = []
 
     def begin_reset_loop(self):
-        endtime = 60.0 - ((time.time() - self.reftime) % 60.0)
+        endtime = 120.0 - ((time.time() - self.reftime) % 60.0)
         threading.Timer(endtime, self.begin_reset_loop).start()
+        self.reset_lock = True
         self.__reset_database()
         self.pics_run()
         self.aww_run()
-        self.refresh_cache()
+
+    def begin_cache_refresh(self):
+        endtime = 60.0 - ((time.time() - self.reftime) % 60.0)
+        threading.Timer(endtime, self.begin_cache_refresh).start()
+        if not self.reset_lock:
+            self.refresh_cache()
+        self.reset_lock = False
 
     def refresh_cache(self):
         connection = sqlite3.connect(self.db)
@@ -177,3 +185,4 @@ if __name__ == "__main__":
     db.pics_run()
     db.aww_run()
     db.begin_reset_loop()
+    db.begin_cache_refresh()
