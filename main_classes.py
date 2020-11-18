@@ -1,10 +1,12 @@
 import praw, sqlite3, time, threading
-from os import getenv
+from os import getenv, path
 from dotenv import load_dotenv
 
 load_dotenv()
 CLIENT_ID = getenv('CLIENT_ID')
 CLIENT_SECRET = getenv('CLIENT_SECRET')
+dir_path = path.dirname(path.realpath(__file__))
+db_file_location = "{}/posts.db".format(dir_path)
 
 class RedditAPI:
     def __init__(self):
@@ -38,7 +40,7 @@ class RedditAPI:
         return return_list
 
 class database:
-    def __init__(self, db="/home/ubuntu/jacobbot/redditgrabber/posts.db"):
+    def __init__(self, db=db_file_location):
         self.db = db
         self.__create_databases()
         self.uuids = []
@@ -169,14 +171,18 @@ class database:
         self.uuids.append(uuid)
 
     def cache_into_timestamps(self, subreddit):
+        print(subreddit, self.uuids)
         self.write_timestamps(subreddit, self.uuids[0], self.uuids[1], self.uuids[2], self.uuids[3], self.uuids[4], self.uuids[5], self.uuids[6], self.uuids[7], self.uuids[8], self.uuids[9])
 
     def pics_run(self):
         content = RedditAPI().pics()
         db = database()
+        print("printing content")
+        print(*content)
         for nsfw, title, score, url, selftext, author, post_id in content:
             db.write_cache(nsfw, "pics", title, score, url, selftext, author, post_id)
             db.uuid_info(post_id)
+            print(score, "post_id")
         db.cache_into_timestamps("pics")
 
     def aww_run(self):
