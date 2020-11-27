@@ -85,6 +85,7 @@ class database:
         endtime = 60.0 - ((time.time() - self.reftime) % 60.0)
         threading.Timer(endtime, self.begin_cache_refresh).start()
         if not self.reset_lock:
+            print("starting refresh cache")
             self.refresh_cache()
         self.reset_lock = False
 
@@ -98,7 +99,7 @@ class database:
 
         for sub, post0, post1, post2, post3, post4, post5, post6, post7, post8, post9 in results:
             if len(sub) > 1:
-                result = RedditAPI().subreddit_search(sub)
+                result = RedditAPI().subreddit_search(sub, override=True)
                 connection = sqlite3.connect(self.db)
                 c = connection.cursor()
 
@@ -177,12 +178,9 @@ class database:
     def pics_run(self):
         content = RedditAPI().pics()
         db = database()
-        print("printing content")
-        print(*content)
         for nsfw, title, score, url, selftext, author, post_id in content:
             db.write_cache(nsfw, "pics", title, score, url, selftext, author, post_id)
             db.uuid_info(post_id)
-            print(score, "post_id")
         db.cache_into_timestamps("pics")
 
     def aww_run(self):
@@ -201,7 +199,5 @@ class database:
 
 if __name__ == "__main__":
     db = database()
-    db.pics_run()
-    db.aww_run()
     db.begin_reset_loop()
     db.begin_cache_refresh()
