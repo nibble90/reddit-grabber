@@ -106,6 +106,7 @@ class database:
                 list_of_posts = [post0, post1, post2, post3, post4, post5, post6, post7, post8, post9]
 
                 for nsfw, title, score, url, selftext, author, post_id in result:
+                    nsfw = str(nsfw, )
                     title = str(title, )
                     score = str(score, )
                     url = str(url, )
