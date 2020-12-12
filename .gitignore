@@ -5,3 +5,4 @@ pyvenv.cfg
 lib64
 .env
 *.db
+__pycache__
