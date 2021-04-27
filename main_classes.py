@@ -106,7 +106,7 @@ class database:
                 list_of_posts = [post0, post1, post2, post3, post4, post5, post6, post7, post8, post9]
 
                 for nsfw, title, score, url, selftext, author, post_id in result:
-                    nsfw = str(nsfw, )
+                    nsfw = bool(nsfw, )
                     title = str(title, )
                     score = str(score, )
                     url = str(url, )
@@ -123,9 +123,10 @@ class database:
     def unix_time(self):
         return int(time.time())
 
-    def write_cache(self, nsfw=None, subreddit=None, title=None, score=None, url=None, selftext=None, author=None, post_id=None):
+    def write_cache(self, nsfw=False, subreddit=None, title=None, score=None, url=None, selftext=None, author=None, post_id=None):
         connection = sqlite3.connect(self.db)
         c = connection.cursor()
+        nsfw = bool(nsfw, )
         title = str(title, )
         score = str(score, )
         url = str(url, )
